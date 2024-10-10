@@ -4,7 +4,7 @@ from database.connect import *
 from database.init_database import *
 
 from returns.result import Result, Success, Failure
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict
 
 

@@ -1,5 +1,4 @@
 import pandas as pd
-from pymongo import MongoClient
 
 from database.connect import get_database
 
@@ -31,24 +30,25 @@ def aggregate_data_by_day(db = traffic_db):
     db = db
     accidents = db['accidents']
     pipeline = [
-        {"$group": {
-            "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$CRASH_DATE"}},
-            "total_accidents": {"$sum": 1},
-            "total_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_TOTAL", None]},
-                                                            {"$ne": ["$INJURIES_TOTAL", float('nan')]}]},
-                                                  "$INJURIES_TOTAL", 0]}},
-            "total_fatal_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_FATAL", None]},
-                                                                  {"$ne": ["$INJURIES_FATAL", float('nan')]}]},
-                                                        "$INJURIES_FATAL", 0]}},
-            "incapacitating_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_INCAPACITATING", None]},
-                                                                     {"$ne": ["$INJURIES_INCAPACITATING",
-                                                                              float('nan')]}]},
-                                                           "$INJURIES_INCAPACITATING", 0]}}
-        }},
-        {"$project": {
-            "date": "$_id", "total_accidents": 1, "total_injuries": 1,
-            "total_fatal_injuries": 1, "incapacitating_injuries": 1, "_id": 0
-        }}
+        {
+            "$group": {
+                "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$CRASH_DATE"}},
+                "total_accidents": {"$sum": 1},
+                "total_injuries": {"$sum": {"$ifNull": ["$INJURIES_TOTAL", 0]}},
+                "total_fatal_injuries": {"$sum": {"$ifNull": ["$INJURIES_FATAL", 0]}},
+                "incapacitating_injuries": {"$sum": {"$ifNull": ["$INJURIES_INCAPACITATING", 0]}}
+            }
+        },
+        {
+            "$project": {
+                "date": "$_id",
+                "total_accidents": 1,
+                "total_injuries": 1,
+                "total_fatal_injuries": 1,
+                "incapacitating_injuries": 1,
+                "_id": 0
+            }
+        }
     ]
     result = list(accidents.aggregate(pipeline))
     if result:
@@ -61,24 +61,25 @@ def aggregate_data_by_week(db = traffic_db):
     db = db
     accidents = db['accidents']
     pipeline = [
-        {"$group": {
-            "_id": {"$dateToString": {"format": "%Y-%U", "date": "$CRASH_DATE"}},
-            "total_accidents": {"$sum": 1},
-            "total_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_TOTAL", None]},
-                                                            {"$ne": ["$INJURIES_TOTAL", float('nan')]}]},
-                                                  "$INJURIES_TOTAL", 0]}},
-            "total_fatal_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_FATAL", None]},
-                                                                  {"$ne": ["$INJURIES_FATAL", float('nan')]}]},
-                                                        "$INJURIES_FATAL", 0]}},
-            "incapacitating_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_INCAPACITATING", None]},
-                                                                     {"$ne": ["$INJURIES_INCAPACITATING",
-                                                                              float('nan')]}]},
-                                                           "$INJURIES_INCAPACITATING", 0]}}
-        }},
-        {"$project": {
-            "year_week": "$_id", "total_accidents": 1, "total_injuries": 1,
-            "total_fatal_injuries": 1, "incapacitating_injuries": 1, "_id": 0
-        }}
+        {
+            "$group": {
+                "_id": {"$dateToString": {"format": "%Y-%U", "date": "$CRASH_DATE"}},
+                "total_accidents": {"$sum": 1},
+                "total_injuries": {"$sum": {"$ifNull": ["$INJURIES_TOTAL", 0]}},
+                "total_fatal_injuries": {"$sum": {"$ifNull": ["$INJURIES_FATAL", 0]}},
+                "incapacitating_injuries": {"$sum": {"$ifNull": ["$INJURIES_INCAPACITATING", 0]}}
+            }
+        },
+        {
+            "$project": {
+                "year_week": "$_id",
+                "total_accidents": 1,
+                "total_injuries": 1,
+                "total_fatal_injuries": 1,
+                "incapacitating_injuries": 1,
+                "_id": 0
+            }
+        }
     ]
     result = list(accidents.aggregate(pipeline))
     if result:
@@ -91,24 +92,25 @@ def aggregate_data_by_month(db = traffic_db):
     db = db
     accidents = db['accidents']
     pipeline = [
-        {"$group": {
-            "_id": {"$dateToString": {"format": "%Y-%m", "date": "$CRASH_DATE"}},
-            "total_accidents": {"$sum": 1},
-            "total_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_TOTAL", None]},
-                                                            {"$ne": ["$INJURIES_TOTAL", float('nan')]}]},
-                                                  "$INJURIES_TOTAL", 0]}},
-            "total_fatal_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_FATAL", None]},
-                                                                  {"$ne": ["$INJURIES_FATAL", float('nan')]}]},
-                                                        "$INJURIES_FATAL", 0]}},
-            "incapacitating_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_INCAPACITATING", None]},
-                                                                     {"$ne": ["$INJURIES_INCAPACITATING",
-                                                                              float('nan')]}]},
-                                                           "$INJURIES_INCAPACITATING", 0]}}
-        }},
-        {"$project": {
-            "year_month": "$_id", "total_accidents": 1, "total_injuries": 1,
-            "total_fatal_injuries": 1, "incapacitating_injuries": 1, "_id": 0
-        }}
+        {
+            "$group": {
+                "_id": {"$dateToString": {"format": "%Y-%m", "date": "$CRASH_DATE"}},
+                "total_accidents": {"$sum": 1},
+                "total_injuries": {"$sum": {"$ifNull": ["$INJURIES_TOTAL", 0]}},
+                "total_fatal_injuries": {"$sum": {"$ifNull": ["$INJURIES_FATAL", 0]}},
+                "incapacitating_injuries": {"$sum": {"$ifNull": ["$INJURIES_INCAPACITATING", 0]}}
+            }
+        },
+        {
+            "$project": {
+                "year_month": "$_id",
+                "total_accidents": 1,
+                "total_injuries": 1,
+                "total_fatal_injuries": 1,
+                "incapacitating_injuries": 1,
+                "_id": 0
+            }
+        }
     ]
     result = list(accidents.aggregate(pipeline))
     if result:
@@ -121,24 +123,25 @@ def aggregate_data_by_region(db = traffic_db):
     db = db
     accidents = db['accidents']
     pipeline = [
-        {"$group": {
-            "_id": "$BEAT_OF_OCCURRENCE",
-            "total_accidents": {"$sum": 1},
-            "total_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_TOTAL", None]},
-                                                            {"$ne": ["$INJURIES_TOTAL", float('nan')]}]},
-                                                  "$INJURIES_TOTAL", 0]}},
-            "total_fatal_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_FATAL", None]},
-                                                                  {"$ne": ["$INJURIES_FATAL", float('nan')]}]},
-                                                        "$INJURIES_FATAL", 0]}},
-            "incapacitating_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_INCAPACITATING", None]},
-                                                                     {"$ne": ["$INJURIES_INCAPACITATING",
-                                                                              float('nan')]}]},
-                                                           "$INJURIES_INCAPACITATING", 0]}}
-        }},
-        {"$project": {
-            "region": "$_id", "total_accidents": 1, "total_injuries": 1,
-            "total_fatal_injuries": 1, "incapacitating_injuries": 1, "_id": 0
-        }}
+        {
+            "$group": {
+                "_id": "$BEAT_OF_OCCURRENCE",
+                "total_accidents": {"$sum": 1},
+                "total_injuries": {"$sum": {"$ifNull": ["$INJURIES_TOTAL", 0]}},
+                "total_fatal_injuries": {"$sum": {"$ifNull": ["$INJURIES_FATAL", 0]}},
+                "incapacitating_injuries": {"$sum": {"$ifNull": ["$INJURIES_INCAPACITATING", 0]}}
+            }
+        },
+        {
+            "$project": {
+                "region": "$_id",
+                "total_accidents": 1,
+                "total_injuries": 1,
+                "total_fatal_injuries": 1,
+                "incapacitating_injuries": 1,
+                "_id": 0
+            }
+        }
     ]
     result = list(accidents.aggregate(pipeline))
     if result:
@@ -151,27 +154,29 @@ def aggregate_data_by_region_and_day(db = traffic_db):
     db = db
     accidents = db['accidents']
     pipeline = [
-        {"$group": {
-            "_id": {
-                "region": "$BEAT_OF_OCCURRENCE",
-                "date": {"$dateToString": {"format": "%Y-%m-%d", "date": "$CRASH_DATE"}}
-            },
-            "total_accidents": {"$sum": 1},
-            "total_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_TOTAL", None]},
-                                                            {"$ne": ["$INJURIES_TOTAL", float('nan')]}]},
-                                                  "$INJURIES_TOTAL", 0]}},
-            "total_fatal_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_FATAL", None]},
-                                                                  {"$ne": ["$INJURIES_FATAL", float('nan')]}]},
-                                                        "$INJURIES_FATAL", 0]}},
-            "incapacitating_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_INCAPACITATING", None]},
-                                                                     {"$ne": ["$INJURIES_INCAPACITATING",
-                                                                              float('nan')]}]},
-                                                           "$INJURIES_INCAPACITATING", 0]}}
-        }},
-        {"$project": {
-            "region": "$_id.region", "date": "$_id.date", "total_accidents": 1,
-            "total_injuries": 1, "total_fatal_injuries": 1, "incapacitating_injuries": 1, "_id": 0
-        }}
+        {
+            "$group": {
+                "_id": {
+                    "region": "$BEAT_OF_OCCURRENCE",
+                    "date": {"$dateToString": {"format": "%Y-%m-%d", "date": "$CRASH_DATE"}}
+                },
+                "total_accidents": {"$sum": 1},
+                "total_injuries": {"$sum": {"$ifNull": ["$INJURIES_TOTAL", 0]}},
+                "total_fatal_injuries": {"$sum": {"$ifNull": ["$INJURIES_FATAL", 0]}},
+                "incapacitating_injuries": {"$sum": {"$ifNull": ["$INJURIES_INCAPACITATING", 0]}}
+            }
+        },
+        {
+            "$project": {
+                "region": "$_id.region",
+                "date": "$_id.date",
+                "total_accidents": 1,
+                "total_injuries": 1,
+                "total_fatal_injuries": 1,
+                "incapacitating_injuries": 1,
+                "_id": 0
+            }
+        }
     ]
     result = list(accidents.aggregate(pipeline))
     if result:
@@ -184,27 +189,29 @@ def aggregate_data_by_region_and_week(db = traffic_db):
     db = db
     accidents = db['accidents']
     pipeline = [
-        {"$group": {
-            "_id": {
-                "region": "$BEAT_OF_OCCURRENCE",
-                "year_week": {"$dateToString": {"format": "%Y-%U", "date": "$CRASH_DATE"}}
-            },
-            "total_accidents": {"$sum": 1},
-            "total_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_TOTAL", None]},
-                                                            {"$ne": ["$INJURIES_TOTAL", float('nan')]}]},
-                                                  "$INJURIES_TOTAL", 0]}},
-            "total_fatal_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_FATAL", None]},
-                                                                  {"$ne": ["$INJURIES_FATAL", float('nan')]}]},
-                                                        "$INJURIES_FATAL", 0]}},
-            "incapacitating_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_INCAPACITATING", None]},
-                                                                     {"$ne": ["$INJURIES_INCAPACITATING",
-                                                                              float('nan')]}]},
-                                                           "$INJURIES_INCAPACITATING", 0]}}
-        }},
-        {"$project": {
-            "region": "$_id.region", "year_week": "$_id.year_week", "total_accidents": 1,
-            "total_injuries": 1, "total_fatal_injuries": 1, "incapacitating_injuries": 1, "_id": 0
-        }}
+        {
+            "$group": {
+                "_id": {
+                    "region": "$BEAT_OF_OCCURRENCE",
+                    "year_week": {"$dateToString": {"format": "%Y-%U", "date": "$CRASH_DATE"}}
+                },
+                "total_accidents": {"$sum": 1},
+                "total_injuries": {"$sum": {"$ifNull": ["$INJURIES_TOTAL", 0]}},
+                "total_fatal_injuries": {"$sum": {"$ifNull": ["$INJURIES_FATAL", 0]}},
+                "incapacitating_injuries": {"$sum": {"$ifNull": ["$INJURIES_INCAPACITATING", 0]}}
+            }
+        },
+        {
+            "$project": {
+                "region": "$_id.region",
+                "year_week": "$_id.year_week",
+                "total_accidents": 1,
+                "total_injuries": 1,
+                "total_fatal_injuries": 1,
+                "incapacitating_injuries": 1,
+                "_id": 0
+            }
+        }
     ]
     result = list(accidents.aggregate(pipeline))
     if result:
@@ -217,27 +224,29 @@ def aggregate_data_by_region_and_month(db = traffic_db):
     db = db
     accidents = db['accidents']
     pipeline = [
-        {"$group": {
-            "_id": {
-                "region": "$BEAT_OF_OCCURRENCE",
-                "year_month": {"$dateToString": {"format": "%Y-%m", "date": "$CRASH_DATE"}}
-            },
-            "total_accidents": {"$sum": 1},
-            "total_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_TOTAL", None]},
-                                                            {"$ne": ["$INJURIES_TOTAL", float('nan')]}]},
-                                                  "$INJURIES_TOTAL", 0]}},
-            "total_fatal_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_FATAL", None]},
-                                                                  {"$ne": ["$INJURIES_FATAL", float('nan')]}]},
-                                                        "$INJURIES_FATAL", 0]}},
-            "incapacitating_injuries": {"$sum": {"$cond": [{"$and": [{"$ne": ["$INJURIES_INCAPACITATING", None]},
-                                                                     {"$ne": ["$INJURIES_INCAPACITATING",
-                                                                              float('nan')]}]},
-                                                           "$INJURIES_INCAPACITATING", 0]}}
-        }},
-        {"$project": {
-            "region": "$_id.region", "year_month": "$_id.year_month", "total_accidents": 1,
-            "total_injuries": 1, "total_fatal_injuries": 1, "incapacitating_injuries": 1, "_id": 0
-        }}
+        {
+            "$group": {
+                "_id": {
+                    "region": "$BEAT_OF_OCCURRENCE",
+                    "year_month": {"$dateToString": {"format": "%Y-%m", "date": "$CRASH_DATE"}}
+                },
+                "total_accidents": {"$sum": 1},
+                "total_injuries": {"$sum": {"$ifNull": ["$INJURIES_TOTAL", 0]}},
+                "total_fatal_injuries": {"$sum": {"$ifNull": ["$INJURIES_FATAL", 0]}},
+                "incapacitating_injuries": {"$sum": {"$ifNull": ["$INJURIES_INCAPACITATING", 0]}}
+            }
+        },
+        {
+            "$project": {
+                "region": "$_id.region",
+                "year_month": "$_id.year_month",
+                "total_accidents": 1,
+                "total_injuries": 1,
+                "total_fatal_injuries": 1,
+                "incapacitating_injuries": 1,
+                "_id": 0
+            }
+        }
     ]
     result = list(accidents.aggregate(pipeline))
     if result:
@@ -247,12 +256,11 @@ def aggregate_data_by_region_and_month(db = traffic_db):
 
 
 if __name__ == "__main__":
-    # load_data_to_mongo(ACCIDENTS_DATA_PATH)
-    # aggregate_data_by_day()
-    # aggregate_data_by_week()
-    # aggregate_data_by_month()
-    # aggregate_data_by_region()
-    # aggregate_data_by_region_and_day()
-    # aggregate_data_by_region_and_week()
-    # aggregate_data_by_region_and_month()
-    print()
+    load_data_to_mongo(ACCIDENTS_DATA_PATH)
+    aggregate_data_by_day()
+    aggregate_data_by_week()
+    aggregate_data_by_month()
+    aggregate_data_by_region()
+    aggregate_data_by_region_and_day()
+    aggregate_data_by_region_and_week()
+    aggregate_data_by_region_and_month()
