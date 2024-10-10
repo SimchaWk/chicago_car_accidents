@@ -5,6 +5,21 @@ from repository.accidents_repository import *
 
 accidents_bp = Blueprint('accidents', __name__)
 
+@accidents_bp.route('/initialize_database', methods=['POST'])
+def init_database():
+    result = init_db_with_data()
+    if result.is_success():
+        return jsonify({
+            "message": "Database initialized successfully",
+            "details": result.unwrap()
+        }), 200
+    else:
+        return jsonify({
+            "error": "Failed to initialize database",
+            "details": result.failure()
+        }), 500
+
+
 @accidents_bp.route('/total_accidents/<int:region_code>', methods=['GET'])
 def get_total_accidents(region_code):
     result = get_total_accidents_by_region(region_code)

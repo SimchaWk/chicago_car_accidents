@@ -9,6 +9,7 @@ from typing import Dict
 
 
 def init_db_with_data():
+    drop_database()
     load_data_to_mongo(ACCIDENTS_DATA_PATH)
     aggregate_data_by_day()
     aggregate_data_by_week()
